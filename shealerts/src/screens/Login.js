@@ -10,7 +10,7 @@ const isValidMobileNumber = (number) => {
   return regex.test(number); // Returns true if the number is valid, false otherwise
 };
 
-const Login = () => {
+const Login = ({navigation}) => {
   // State for inputs
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
@@ -18,17 +18,18 @@ const Login = () => {
   // Handle Login logic
   const handleLogin = () => {
     // Validate Mobile Number
-    if (!isValidMobileNumber(mobileNumber)) {
-      Alert.alert('Invalid Mobile Number', 'Please enter a valid 10-digit mobile number.');
-      return;
-    }
+    // if (!isValidMobileNumber(mobileNumber)) {
+    //   Alert.alert('Invalid Mobile Number', 'Please enter a valid 10-digit mobile number.');
+    //   return;
+    // }
+
 
     // For now, logging the form data. You can replace this with your actual login logic.
     console.log({
       mobileNumber,
       password,
     });
-
+    navigation.navigate("Home");
     // Navigate to the next page or display success
     // Add your actual login authentication here
   };
