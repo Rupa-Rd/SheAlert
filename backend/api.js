@@ -98,7 +98,7 @@ async function detectEmotions(text) {
 /**
  * API endpoint for uploading audio file, transcribing, and detecting emotions
  */
-app.post('/transcribe-and-detect-emotions', upload.single('audio'), async (req, res) => {
+app.post('/transcribe-and-detect-emotions', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No audio file uploaded' });

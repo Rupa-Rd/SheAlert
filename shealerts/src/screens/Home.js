@@ -41,16 +41,16 @@ const Home = () => {
   // Function to stop recording
   async function stopRecording() {
     if (!recording) return;
-
+  
     try {
       setIsLoading(true); // Show loading indicator
       await recording.stopAndUnloadAsync(); // Stop and unload the recording
       const uri = recording.getURI(); // Get the URI of the recording
-
+  
       if (!uri) {
         throw new Error('Failed to get URI for recording');
       }
-
+  
       // Prepare the audio file for upload
       const formData = new FormData();
       formData.append('audio', {
@@ -58,23 +58,34 @@ const Home = () => {
         type: 'audio/m4a', // MIME type for the audio file
         name: 'audio.m4a', // File name
       });
-
+  
+      // Log the backend URL
+      const backendUrl = 'https://shealert.onrender.com/transcribe-and-detect-emotions';
+      console.log('Sending request to:', backendUrl);
+  
       // Send the audio file to the backend API
-      const response = await fetch('http://192.168.1.100:3000/transcribe-and-detect-emotions', {
+      const response = await fetch(backendUrl, {
         method: 'POST',
         body: formData,
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-
+  
+      // Log the response status
+      console.log('Response status:', response.status);
+  
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('Response error:', errorText);
         throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
       }
-
+  
       const data = await response.json();
-
+  
+      // Log the response data
+      console.log('Response data:', data);
+  
       // Update state with the response
       setTranscription(data.transcription);
       setEmotions(data.emotions);
@@ -87,7 +98,6 @@ const Home = () => {
       setIsLoading(false); // Hide loading indicator
     }
   }
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Real-Time Audio Transcription & Emotion Detection</Text>
