@@ -71,7 +71,7 @@ const Result = ({ route }) => {
     const isAvailable = await SMS.isAvailableAsync();
     if (isAvailable) {
       // Replace with actual emergency contact numbers
-      const emergencyContacts = ['8667012995', '0987654321'];
+      const emergencyContacts = ['8600702995', '9966012935'];
       const { result } = await SMS.sendSMSAsync(emergencyContacts, message);
 
       if (result === 'sent') {
