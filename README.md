@@ -56,3 +56,5 @@ running, ensuring that the app respects the user’s privacy when not in use.
 8. **Data Privacy:** Ensure data privacy by processing data securely on the device and backend, with proper encryption
 
 
+## Execution
+
