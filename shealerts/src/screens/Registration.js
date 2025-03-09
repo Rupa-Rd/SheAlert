@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import InputBox from '../components/InputBox'; // Import InputBox component
 import BannerWithoutProfile from '../components/BannerWithoutProfile';
+import { UserContext } from '../components/UserContext';
 
 // Function to validate mobile number using a regex pattern
 const isValidMobileNumber = (number) => {
@@ -10,8 +11,9 @@ const isValidMobileNumber = (number) => {
   return regex.test(number); // Returns true if the number is valid, false otherwise
 };
 
-const Registration = () => {
+const Registration = ({navigation}) => {
   // State for inputs
+  const { updateUserDetails } = useContext(UserContext);
   const [fullName, setFullName] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
@@ -46,13 +48,26 @@ const Registration = () => {
     }
 
     // For now, logging the form data. You can replace this with your actual registration logic.
-    console.log({
+    // Save details in context
+    const userDetails = {
       fullName,
       mobileNumber,
       password,
-      emergencyContact1: { fullName: emergencyContact1Name, mobileNumber: emergencyContact1Mobile },
-      emergencyContact2: { fullName: emergencyContact2Name, mobileNumber: emergencyContact2Mobile },
-    });
+      emergencyContact1: { name: emergencyContact1Name, mobileNumber: emergencyContact1Mobile },
+      emergencyContact2: { name: emergencyContact2Name, mobileNumber: emergencyContact2Mobile },
+    };
+
+    updateUserDetails(userDetails);  // Update the global context with the registration details
+
+    // For now, logging the form data. You can replace this with your actual registration logic.
+    console.log(userDetails);
+
+    navigation.navigate('Success');
+
+    // After 800ms, navigate to HomePage
+    setTimeout(() => {
+      navigation.replace('Home');  // 'replace' ensures it doesn't leave a back button to the SuccessPage
+    }, 3000);
 
     // Display success or proceed to next screen (e.g., navigate to Home or Login)
   };

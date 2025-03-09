@@ -51,7 +51,7 @@ async function transcribeAudio(filePath) {
 
     console.log('Sending request to Hugging Face API...');
     const response = await axios.post(
-      'https://api-inference.huggingface.co/models/openai/whisper-small',
+      'https://api-inference.huggingface.co/models/openai/whisper-large',
       { inputs: audioData },
       { headers: { Authorization: `Bearer ${HUGGINGFACE_API_KEY}` } }
     );

@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Audio } from 'expo-av';
+import { FontAwesome } from 'react-native-vector-icons';
+import { useNavigation } from '@react-navigation/native'; // Import useNavigation
 
 const Home = () => {
   const [isRecording, setIsRecording] = useState(false);
-  const [recording, setRecording] = useState(null); // State to hold the recording object
-  const [transcription, setTranscription] = useState('');
-  const [emotions, setEmotions] = useState({});
+  const [recording, setRecording] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigation = useNavigation(); // Initialize navigation
+
+  // Start recording automatically when the component mounts
+  useEffect(() => {
+    startRecording();
+  }, []);
 
   // Function to start recording
   async function startRecording() {
@@ -30,92 +36,82 @@ const Home = () => {
       const { recording: newRecording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
-      setRecording(newRecording); // Save the recording object
-      setIsRecording(true); // Update recording state
+      setRecording(newRecording);
+      setIsRecording(true);
     } catch (err) {
       console.error('Failed to start recording:', err);
       Alert.alert('Recording Error', 'Failed to start recording. Please try again.');
     }
   }
 
-  // Function to stop recording
+  // Function to stop recording and navigate to the results page
   async function stopRecording() {
     if (!recording) return;
-  
+
     try {
-      setIsLoading(true); // Show loading indicator
-      await recording.stopAndUnloadAsync(); // Stop and unload the recording
-      const uri = recording.getURI(); // Get the URI of the recording
-  
+      setIsLoading(true);
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+
       if (!uri) {
         throw new Error('Failed to get URI for recording');
       }
-  
+
       // Prepare the audio file for upload
       const formData = new FormData();
-      formData.append('audio', {
+      formData.append('file', {
         uri,
-        type: 'audio/m4a', // MIME type for the audio file
-        name: 'audio.m4a', // File name
+        type: 'audio/m4a',
+        name: 'audio.m4a',
       });
-  
-      // Log the backend URL
-      const backendUrl = 'https://shealert.onrender.com/transcribe-and-detect-emotions';
-      console.log('Sending request to:', backendUrl);
-  
+
       // Send the audio file to the backend API
-      const response = await fetch(backendUrl, {
+      const response = await fetch('https://shealert.onrender.com/transcribe-and-detect-emotions', {
         method: 'POST',
         body: formData,
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-  
-      // Log the response status
-      console.log('Response status:', response.status);
-  
+
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Response error:', errorText);
         throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
       }
-  
+
       const data = await response.json();
-  
-      // Log the response data
-      console.log('Response data:', data);
-  
-      // Update state with the response
-      setTranscription(data.transcription);
-      setEmotions(data.emotions);
+
+      // Navigate to the results page with the API response
+      navigation.navigate('Result', { transcription: data.transcription, emotions: data.emotions });
     } catch (error) {
       console.error('Failed to process audio:', error);
       Alert.alert('Processing Error', 'Failed to process audio. Please try again.');
     } finally {
-      setIsRecording(false); // Reset recording state
-      setRecording(null); // Clear the recording object
-      setIsLoading(false); // Hide loading indicator
+      setIsRecording(false);
+      setRecording(null);
+      setIsLoading(false);
     }
   }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Real-Time Audio Transcription & Emotion Detection</Text>
-      <Button
-        title={isRecording ? 'Stop Recording' : 'Start Recording'}
-        onPress={isRecording ? stopRecording : startRecording}
-      />
-      {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
-      {transcription && (
-        <View style={styles.resultContainer}>
-          <Text style={styles.subtitle}>Transcription:</Text>
-          <Text>{transcription}</Text>
-          <Text style={styles.subtitle}>Emotions:</Text>
-          {Object.entries(emotions).map(([emotion, score]) => (
-            <Text key={emotion}>{`${emotion}: ${(score * 100).toFixed(2)}%`}</Text>
-          ))}
+
+      {/* Recording indicator */}
+      {isRecording && (
+        <View style={styles.recordingIndicator}>
+          <Text style={styles.recordingText}>Recording...</Text>
+          <FontAwesome
+            name="stop"
+            size={40}
+            color="white"
+            style={styles.stopButton}
+            onPress={stopRecording}
+          />
         </View>
       )}
+
+      {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
     </View>
   );
 };
@@ -126,6 +122,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
     fontSize: 20,
@@ -133,13 +130,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
-  subtitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 10,
-  },
-  resultContainer: {
+  recordingIndicator: {
+    alignItems: 'center',
     marginTop: 20,
+  },
+  recordingText: {
+    fontSize: 16,
+    color: 'red',
+    marginBottom: 10,
+  },
+  stopButton: {
+    backgroundColor: 'red',
+    padding: 15,
+    borderRadius: 50,
   },
 });
 
