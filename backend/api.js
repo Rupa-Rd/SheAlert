@@ -35,6 +35,7 @@ const upload = multer({
 });
 
 const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
+const HUGGING_FACE_MODEL_URL = 'https://api-inference.huggingface.co/models/EleutherAI/gpt-neo-2.7B';
 
 if (!HUGGINGFACE_API_KEY) {
   console.error('Missing Hugging Face API Key. Please set HUGGINGFACE_API_KEY in your .env');
@@ -120,6 +121,34 @@ app.post('/transcribe-and-detect-emotions', upload.single('file'), async (req, r
   } catch (error) {
     console.error('Error in API:', error.message);
     res.status(500).json({ error: 'Failed to process audio' });
+  }
+});
+
+app.post('/generate-guidance', async (req, res) => {
+  const { transcript } = req.body;
+
+  try {
+    const response = await axios.post(
+      HUGGING_FACE_MODEL_URL,
+      {
+        inputs: `Generate guidance based on the following transcript: ${transcript}`,
+        parameters: {
+          max_length: 150, // Adjust as needed
+          temperature: 0.7, // Adjust for creativity
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${HUGGINGFACE_API_KEY}`,
+        },
+      }
+    );
+
+    const guidance = response.data[0]?.generated_text || 'No guidance generated.';
+    res.json({ guidance });
+  } catch (error) {
+    console.error('Error calling Hugging Face API:', error);
+    res.status(500).json({ guidance: 'Failed to generate guidance. Please try again.' });
   }
 });
 

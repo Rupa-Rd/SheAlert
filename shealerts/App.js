@@ -9,6 +9,7 @@ import Home from "./src/screens/Home";
 import Success from "./src/screens/Success";
 import Profile from "./src/screens/Profile";
 import Result from "./src/screens/Result";
+import Guidance from "./src/screens/Guidance";
 import { UserProvider } from "./src/components/UserContext";
 
 const Stack = createStackNavigator();
@@ -25,6 +26,7 @@ export default function App() {
         <Stack.Screen name="Success" component={Success} options={{ headerShown: false }}/>
         <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }}/>
         <Stack.Screen name="Result" component={Result} options={{ headerShown: false }}/>
+        <Stack.Screen name="Guidance" component={Guidance} options={{ headerShown: false }}/>
       </Stack.Navigator>
       </NavigationContainer>
       </UserProvider>

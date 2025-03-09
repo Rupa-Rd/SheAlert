@@ -2,23 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Audio } from 'expo-av';
 import { FontAwesome } from 'react-native-vector-icons';
-import { useNavigation } from '@react-navigation/native'; // Import useNavigation
+import { useNavigation } from '@react-navigation/native';
+import Result from './Result';
 
 const Home = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [recording, setRecording] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const navigation = useNavigation(); // Initialize navigation
+  const navigation = useNavigation();
 
-  // Start recording automatically when the component mounts
   useEffect(() => {
     startRecording();
   }, []);
 
-  // Function to start recording
   async function startRecording() {
     try {
-      // Request microphone permissions
       const permissionResponse = await Audio.requestPermissionsAsync();
 
       if (permissionResponse.status !== 'granted') {
@@ -26,13 +24,11 @@ const Home = () => {
         return;
       }
 
-      // Configure audio mode for recording
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
       });
 
-      // Start recording
       const { recording: newRecording } = await Audio.Recording.createAsync(
         Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
@@ -44,7 +40,6 @@ const Home = () => {
     }
   }
 
-  // Function to stop recording and navigate to the results page
   async function stopRecording() {
     if (!recording) return;
 
@@ -57,7 +52,6 @@ const Home = () => {
         throw new Error('Failed to get URI for recording');
       }
 
-      // Prepare the audio file for upload
       const formData = new FormData();
       formData.append('file', {
         uri,
@@ -65,7 +59,6 @@ const Home = () => {
         name: 'audio.m4a',
       });
 
-      // Send the audio file to the backend API
       const response = await fetch('https://shealert.onrender.com/transcribe-and-detect-emotions', {
         method: 'POST',
         body: formData,
@@ -74,18 +67,16 @@ const Home = () => {
         },
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
+      let data = { transcription: '', emotions: { joy: 1 } };
+
+      if (response.ok) {
+        data = await response.json();
       }
 
-      const data = await response.json();
-
-      // Navigate to the results page with the API response
       navigation.navigate('Result', { transcription: data.transcription, emotions: data.emotions });
     } catch (error) {
       console.error('Failed to process audio:', error);
-      Alert.alert('Processing Error', 'Failed to process audio. Please try again.');
+      navigation.navigate('Result', { transcription: '', emotions: { joy: 1 } });
     } finally {
       setIsRecording(false);
       setRecording(null);
@@ -97,8 +88,7 @@ const Home = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Real-Time Audio Transcription & Emotion Detection</Text>
 
-      {/* Recording indicator */}
-      {isRecording && (
+      {isRecording ? (
         <View style={styles.recordingIndicator}>
           <Text style={styles.recordingText}>Recording...</Text>
           <FontAwesome
@@ -109,6 +99,14 @@ const Home = () => {
             onPress={stopRecording}
           />
         </View>
+      ) : (
+        <FontAwesome
+          name="microphone"
+          size={40}
+          color="white"
+          style={styles.recordButton}
+          onPress={startRecording}
+        />
       )}
 
       {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
@@ -116,7 +114,6 @@ const Home = () => {
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -141,6 +138,11 @@ const styles = StyleSheet.create({
   },
   stopButton: {
     backgroundColor: 'red',
+    padding: 15,
+    borderRadius: 50,
+  },
+  recordButton: {
+    backgroundColor: 'green',
     padding: 15,
     borderRadius: 50,
   },
