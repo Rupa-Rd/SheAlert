@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Audio } from 'expo-av';
 import { FontAwesome } from 'react-native-vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import Result from './Result';
 
 const Home = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -11,19 +10,20 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
 
+  // Request permission for audio recording
   useEffect(() => {
-    startRecording();
-  }, []);
-
-  async function startRecording() {
-    try {
+    const requestPermission = async () => {
       const permissionResponse = await Audio.requestPermissionsAsync();
-
       if (permissionResponse.status !== 'granted') {
         Alert.alert('Permission not granted', 'Microphone access is required to record audio.');
-        return;
       }
+    };
+    requestPermission();
+  }, []);
 
+  // Start audio recording
+  async function startRecording() {
+    try {
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
@@ -40,6 +40,7 @@ const Home = () => {
     }
   }
 
+  // Stop audio recording and send it for transcription and emotion detection
   async function stopRecording() {
     if (!recording) return;
 
@@ -73,6 +74,7 @@ const Home = () => {
         data = await response.json();
       }
 
+      // Navigate to Result screen with transcription and emotions data
       navigation.navigate('Result', { transcription: data.transcription, emotions: data.emotions });
     } catch (error) {
       console.error('Failed to process audio:', error);

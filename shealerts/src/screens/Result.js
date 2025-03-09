@@ -35,7 +35,7 @@ const Result = ({ route }) => {
         return;
       }
 
-      const response = await fetch('http://192.168.1.100:3000/generate-guidance', {
+      const response = await fetch('https://shealert.onrender.com/generate-guidance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,8 +44,12 @@ const Result = ({ route }) => {
       });
 
       const data = await response.json();
-      setGuidance(data.guidance);
-      navigation.navigate('Guidance', { guidance: data.guidance });
+      if (data && data.guidance) {
+        setGuidance(data.guidance);
+        navigation.navigate('Guidance', { guidance: data.guidance });
+      } else {
+        setGuidance('Failed to generate guidance. Please try again.');
+      }
     } catch (error) {
       console.error('Error generating guidance:', error);
       setGuidance('Failed to generate guidance. Please try again.');
@@ -103,12 +107,17 @@ const Result = ({ route }) => {
         </TouchableOpacity>
 
         {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
+
+        {guidance && (
+          <View style={styles.guidanceContainer}>
+            <Text style={styles.guidanceText}>{guidance}</Text>
+          </View>
+        )}
       </View>
     </>
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -132,7 +141,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   guidanceButton: {
-    backgroundColor: 'blue', // Different color for guidance button
+    backgroundColor: 'red', // Different color for guidance button
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
@@ -142,6 +151,17 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  guidanceContainer: {
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 5,
+  },
+  guidanceText: {
+    fontSize: 16,
+    fontStyle: 'italic',
+    color: '#333',
   },
 });
 

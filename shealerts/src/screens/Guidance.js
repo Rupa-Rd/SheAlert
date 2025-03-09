@@ -14,7 +14,7 @@ const Guidance = ({ route }) => {
         return;
       }
 
-      const response = await fetch('http://localhost:3000/generate-guidance', {
+      const response = await fetch('https://shealert.onrender.com/generate-guidance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

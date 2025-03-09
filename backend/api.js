@@ -52,7 +52,7 @@ async function transcribeAudio(filePath) {
 
     console.log('Sending request to Hugging Face API...');
     const response = await axios.post(
-      'https://api-inference.huggingface.co/models/openai/whisper-large',
+      'https://api-inference.huggingface.co/models/openai/whisper-large-v3',
       { inputs: audioData },
       { headers: { Authorization: `Bearer ${HUGGINGFACE_API_KEY}` } }
     );
@@ -72,7 +72,7 @@ async function detectEmotions(text) {
   try {
     console.log('Sending request to Hugging Face emotion detection API...');
     const response = await axios.post(
-      'https://api-inference.huggingface.co/models/MilaNLProc/xlm-emo-t',
+      'https://api-inference.huggingface.co/models/FacebookAI/xlm-roberta-large',
       { inputs: text },
       { headers: { Authorization: `Bearer ${HUGGINGFACE_API_KEY}` } }
     );
