@@ -72,7 +72,7 @@ async function detectEmotions(text) {
   try {
     console.log('Sending request to Hugging Face emotion detection API...');
     const response = await axios.post(
-      'https://api-inference.huggingface.co/models/FacebookAI/xlm-roberta-large',
+      'https://api-inference.huggingface.co/models/MilaNLProc/xlm-emo-t',
       { inputs: text },
       { headers: { Authorization: `Bearer ${HUGGINGFACE_API_KEY}` } }
     );
